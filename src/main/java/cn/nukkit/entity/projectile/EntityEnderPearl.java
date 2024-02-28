@@ -60,7 +60,7 @@ public class EntityEnderPearl extends EntityProjectile {
     }
 
     @Override
-    public boolean onUpdate(Player player, int currentTick) {
+    public boolean onUpdate(int currentTick) {
         if (this.closed) {
             return false;
         }
