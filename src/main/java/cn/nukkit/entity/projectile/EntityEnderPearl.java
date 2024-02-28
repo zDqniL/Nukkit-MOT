@@ -93,6 +93,7 @@ public class EntityEnderPearl extends EntityProjectile {
                         Entity entity = Entity.createEntity("Endermite", this.add(0.5, 1, 0.5));
                         if (entity != null) {
                             entity.spawnToAll();
+                            this.getLevel().addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_BOW);
                         }
                     }
                 }
