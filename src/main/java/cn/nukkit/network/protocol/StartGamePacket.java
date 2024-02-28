@@ -52,7 +52,7 @@ public class StartGamePacket extends DataPacket {
     public int spawnZ;
     public boolean hasAchievementsDisabled = true;
     public boolean worldEditor;
-    public int dayCycleStopTime = -1;
+    public int dayCycleStopTime = 1;
     public boolean eduMode = false;
     public int eduEditionOffer = 0;
     public boolean hasEduFeaturesEnabled = false;
