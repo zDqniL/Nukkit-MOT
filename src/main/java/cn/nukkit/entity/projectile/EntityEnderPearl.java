@@ -60,7 +60,7 @@ public class EntityEnderPearl extends EntityProjectile {
     }
 
     @Override
-    public boolean onUpdate(int currentTick) {
+    public boolean onUpdate(Player player, int currentTick) {
         if (this.closed) {
             return false;
         }
@@ -92,6 +92,7 @@ public class EntityEnderPearl extends EntityProjectile {
                         Entity entity = Entity.createEntity("Endermite", this.add(0.5, 1, 0.5));
                         if (entity != null) {
                             entity.spawnToAll();
+                            player.getLevel().addLevelSoundEvent(player, LevelSoundEventPacket.SOUND_BOW);
                         }
                     }
                 }
