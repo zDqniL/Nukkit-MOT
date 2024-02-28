@@ -14,6 +14,7 @@ import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.Utils;
+import cn.nukkit.network.protocol.LevelSoundEventPacket;
 
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class EntityEnderPearl extends EntityProjectile {
     }
 
     @Override
-    public boolean onUpdate(int currentTick) {
+    public boolean onUpdate(Player player, int currentTick) {
         if (this.closed) {
             return false;
         }
