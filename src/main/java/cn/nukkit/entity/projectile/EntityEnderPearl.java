@@ -112,19 +112,7 @@ public class EntityEnderPearl extends EntityProjectile {
 
     @Override
     public void onCollideWithEntity(Entity entity) {
-        if (this.shootingEntity instanceof Player) {
-            double yaw = this.shootingEntity.yaw;
-            double pitch = this.shootingEntity.pitch;
-
-            MovePlayerPacket movePlayerPacket = new MovePlayerPacket();
-            movePlayerPacket.ridingEid = this.shootingEntity.getId();
-            movePlayerPacket.yaw = (float) yaw;
-            movePlayerPacket.pitch = (float) pitch;
-            movePlayerPacket.headYaw = (float) yaw;
-            movePlayerPacket.onGround = true;
-            movePlayerPacket.teleportItem = 1;
-            this.shootingEntity.getServer().getNetwork().sendPacket(this.shootingEntity, movePlayerPacket);
-
+        if (this.shootingEntity instanceof Player && !this.isCollided) {
             teleport();
         }
 

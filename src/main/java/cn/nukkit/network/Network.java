@@ -3,7 +3,6 @@ package cn.nukkit.network;
 import cn.nukkit.Nukkit;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
-import cn.nukkit.entity.Entity;
 import cn.nukkit.network.process.DataPacketManager;
 import cn.nukkit.network.protocol.*;
 import cn.nukkit.network.protocol.v113.*;
@@ -678,9 +677,6 @@ public class Network {
                 .registerPacket(ProtocolInfo.SET_PLAYER_INVENTORY_OPTIONS_PACKET, SetPlayerInventoryOptionsPacket.class)
                 .registerPacket(ProtocolInfo.SET_HUD_PACKET, SetHudPacket.class)
                 .build();
-    }
-
-    public void sendPacket(Entity shootingEntity, MovePlayerPacket movePlayerPacket) {
     }
 
     @AllArgsConstructor
