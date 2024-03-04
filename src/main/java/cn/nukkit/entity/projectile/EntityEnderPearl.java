@@ -13,6 +13,7 @@ import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.LevelEventPacket;
+import cn.nukkit.network.protocol.MovePlayerPacket;
 import cn.nukkit.utils.Utils;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
 
@@ -108,10 +109,22 @@ public class EntityEnderPearl extends EntityProjectile {
 
         return super.onUpdate(currentTick);
     }
-    
+
     @Override
     public void onCollideWithEntity(Entity entity) {
-        if (this.shootingEntity instanceof Player && !this.isCollided) {
+        if (this.shootingEntity instanceof Player) {
+            double yaw = this.shootingEntity.yaw;
+            double pitch = this.shootingEntity.pitch;
+
+            MovePlayerPacket movePlayerPacket = new MovePlayerPacket();
+            movePlayerPacket.ridingEid = this.shootingEntity.getId();
+            movePlayerPacket.yaw = (float) yaw;
+            movePlayerPacket.pitch = (float) pitch;
+            movePlayerPacket.headYaw = (float) yaw;
+            movePlayerPacket.onGround = true;
+            movePlayerPacket.teleportItem = 1;
+            this.shootingEntity.getServer().getNetwork().sendPacket(this.shootingEntity, movePlayerPacket);
+
             teleport();
         }
 
