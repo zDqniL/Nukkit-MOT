@@ -102,7 +102,7 @@ public class EntityEnderPearl extends EntityProjectile {
             return false;
         }
 
-        if (this.age > 1200 || this.isCollided) {
+        if (this.age > 0 || this.isCollided) {
             this.close();
         }
 
@@ -123,16 +123,16 @@ public class EntityEnderPearl extends EntityProjectile {
             return;
         }
 
-        this.level.addLevelEvent(this.shootingEntity.add(0, 0, 0), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
+        this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
 
-        //this.shootingEntity.teleport(new Vector3(NukkitMath.floorDouble(this.x) + 0.5, this.y, NukkitMath.floorDouble(this.z) + 0.5), TeleportCause.ENDER_PEARL);
+        this.shootingEntity.teleport(new Vector3(NukkitMath.floorDouble(this.x) + 0.5, this.y, NukkitMath.floorDouble(this.z) + 0.5), TeleportCause.ENDER_PEARL);
 
-        /*int gamemode = ((Player) this.shootingEntity).getGamemode();
+        int gamemode = ((Player) this.shootingEntity).getGamemode();
         if (gamemode == 0 || gamemode == 2) {
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, shootingEntity, EntityDamageEvent.DamageCause.FALL, 5f, 0f));
-        }*/
+        }
 
         this.level.addLevelEvent(this, LevelEventPacket.EVENT_PARTICLE_ENDERMAN_TELEPORT);
-        this.level.addLevelEvent(this.shootingEntity.add(0, 0, 0), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
+        this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
     }
 }
