@@ -5714,14 +5714,8 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
 
     protected boolean checkTeleportPosition(boolean enderPearl) {
         if (this.teleportPosition != null) {
-            double playerYaw = Math.toRadians(this.yaw);
-            double playerPitch = Math.toRadians(this.pitch);
-
-            double playerX = this.teleportPosition.x - Math.sin(playerYaw) * 0.5;
-            double playerZ = this.teleportPosition.z - Math.cos(playerYaw) * 0.5;
-
-            int chunkX = (int) playerX >> 4;
-            int chunkZ = (int) playerZ >> 4;
+            int chunkX = (int) this.teleportPosition.x >> 4;
+            int chunkZ = (int) this.teleportPosition.z >> 4;
 
             for (int X = -1; X <= 1; ++X) {
                 for (int Z = -1; Z <= 1; ++Z) {
