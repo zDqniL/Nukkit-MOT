@@ -1,10 +1,8 @@
 package cn.nukkit.entity.projectile;
 
 import cn.nukkit.Player;
-import cn.nukkit.Server;
 import cn.nukkit.block.Block;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.event.entity.CreatureSpawnEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -13,14 +11,8 @@ import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.LevelEventPacket;
-import cn.nukkit.network.protocol.MoveEntityAbsolutePacket;
-import cn.nukkit.utils.Utils;
-import cn.nukkit.network.protocol.LevelSoundEventPacket;
-
-import java.util.List;
 
 public class EntityEnderPearl extends EntityProjectile {
-
     public static final int NETWORK_ID = 87;
 
     @Override
@@ -67,55 +59,33 @@ public class EntityEnderPearl extends EntityProjectile {
             return false;
         }
 
-        if (this.isCollided && this.shootingEntity instanceof Player) {
-            List<Block> b = this.getCollisionBlocks();
+        boolean hasUpdate = super.onUpdate(currentTick);
 
+        if (this.isCollided && this.shootingEntity instanceof Player) {
             boolean portal = false;
-            for (Block collided : b) {
+            for (Block collided : this.getCollisionBlocks()) {
                 if (collided.getId() == Block.NETHER_PORTAL) {
                     portal = true;
                 }
             }
-
-            this.close();
-
             if (!portal) {
                 teleport();
-
-                if (Server.getInstance().mobsFromBlocks) {
-                    if (Utils.rand(1, 20) == 5) {
-                        CreatureSpawnEvent ev = new CreatureSpawnEvent(NETWORK_ID, CreatureSpawnEvent.SpawnReason.ENDER_PEARL);
-                        level.getServer().getPluginManager().callEvent(ev);
-
-                        if (ev.isCancelled()) {
-                            return false;
-                        }
-
-                        Entity entity = Entity.createEntity("Endermite", this.add(0.5, 1, 0.5));
-                        if (entity != null) {
-                            entity.spawnToAll();
-                            this.getLevel().addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_BOW);
-                        }
-                    }
-                }
             }
-
-            return false;
         }
 
-        if (this.age > 0 || this.isCollided) {
-            this.close();
+        if (this.age > 1200 || this.isCollided) {
+            this.kill();
+            hasUpdate = true;
         }
 
-        return super.onUpdate(currentTick);
+        return hasUpdate;
     }
 
     @Override
     public void onCollideWithEntity(Entity entity) {
-        if (this.shootingEntity instanceof Player && !this.isCollided) {
+        if (this.shootingEntity instanceof Player) {
             teleport();
         }
-
         super.onCollideWithEntity(entity);
     }
 
@@ -124,30 +94,12 @@ public class EntityEnderPearl extends EntityProjectile {
             return;
         }
 
-        Vector3 position = new Vector3(NukkitMath.floorDouble(this.x) + 0.5, this.y, NukkitMath.floorDouble(this.z) + 0.5);
-
-        double yaw = this.shootingEntity.yaw;
-        double pitch = this.shootingEntity.pitch;
-        double headYaw = yaw + this.shootingEntity.headYaw;
-
-        MoveEntityAbsolutePacket moveEntityAbsolutePacket = new MoveEntityAbsolutePacket();
-        moveEntityAbsolutePacket.eid = this.shootingEntity.getId();
-        moveEntityAbsolutePacket.x = position.x;
-        moveEntityAbsolutePacket.y = position.y;
-        moveEntityAbsolutePacket.z = position.z;
-        moveEntityAbsolutePacket.yaw = yaw;
-        moveEntityAbsolutePacket.headYaw = headYaw;
-        moveEntityAbsolutePacket.pitch = pitch;
-        moveEntityAbsolutePacket.onGround = true;
-        moveEntityAbsolutePacket.teleport = true;
-        this.shootingEntity.getServer().getNetwork().sendPacket(this.shootingEntity, moveEntityAbsolutePacket);
-
-        int gamemode = ((Player) this.shootingEntity).getGamemode();
-        if (gamemode == 0 || gamemode == 2) {
-            this.shootingEntity.attack(new EntityDamageByEntityEvent(this, shootingEntity, EntityDamageEvent.DamageCause.FALL, 5f, 0f));
+        this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_PORTAL);
+        this.shootingEntity.teleport(new Vector3(NukkitMath.floorDouble(this.x) + 0.5, this.y, NukkitMath.floorDouble(this.z) + 0.5), TeleportCause.ENDER_PEARL);
+        if ((((Player) this.shootingEntity).getGamemode() & 0x01) == 0) {
+            this.shootingEntity.attack(new EntityDamageByEntityEvent(this, shootingEntity, EntityDamageEvent.DamageCause.PROJECTILE, 5f, 0f));
         }
-
-        this.level.addLevelEvent(position, LevelEventPacket.EVENT_PARTICLE_ENDERMAN_TELEPORT);
-        this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
+        this.level.addLevelEvent(this, LevelEventPacket.EVENT_PARTICLE_ENDERMAN_TELEPORT);
+        this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_PORTAL);
     }
 }

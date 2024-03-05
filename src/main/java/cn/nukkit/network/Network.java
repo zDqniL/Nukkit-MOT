@@ -680,9 +680,6 @@ public class Network {
                 .build();
     }
 
-    public void sendPacket(Entity shootingEntity, MoveEntityAbsolutePacket moveEntityAbsolutePacket) {
-    }
-
     @AllArgsConstructor
     @Data
     public static class NetWorkStatisticData {
