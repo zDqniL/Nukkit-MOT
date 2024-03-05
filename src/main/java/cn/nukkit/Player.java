@@ -2291,7 +2291,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
             }
         }
 
-        //this.checkTeleportPosition();
+        this.checkTeleportPosition();
 
         /*if (currentTick % 20 == 0) {
             this.checkInteractNearby();
@@ -5708,14 +5708,20 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         }
     }
 
-    /*protected boolean checkTeleportPosition() {
+    protected boolean checkTeleportPosition() {
         return checkTeleportPosition(false);
     }
 
     protected boolean checkTeleportPosition(boolean enderPearl) {
         if (this.teleportPosition != null) {
-            int chunkX = (int) this.teleportPosition.x >> 4;
-            int chunkZ = (int) this.teleportPosition.z >> 4;
+            double playerYaw = Math.toRadians(this.yaw);
+            double playerPitch = Math.toRadians(this.pitch);
+
+            double playerX = this.teleportPosition.x - Math.sin(playerYaw) * 0.5;
+            double playerZ = this.teleportPosition.z - Math.cos(playerYaw) * 0.5;
+
+            int chunkX = (int) playerX >> 4;
+            int chunkZ = (int) playerZ >> 4;
 
             for (int X = -1; X <= 1; ++X) {
                 for (int Z = -1; Z <= 1; ++Z) {
@@ -5732,7 +5738,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         }
 
         return false;
-    }*/
+    }
 
     protected void sendPlayStatus(int status) {
         sendPlayStatus(status, false);
@@ -5779,7 +5785,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                 this.dimensionChangeInProgress = false;
             } else {
                 this.sendPosition(this, this.yaw, this.pitch, MovePlayerPacket.MODE_TELEPORT);
-                //this.checkTeleportPosition(cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
+                this.checkTeleportPosition(cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
                 this.dummyBossBars.values().forEach(DummyBossBar::reshow);
             }
 
