@@ -13,7 +13,7 @@ import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.LevelEventPacket;
-import cn.nukkit.network.protocol.MovePlayerPacket;
+import cn.nukkit.network.protocol.MoveEntityAbsolutePacket;
 import cn.nukkit.utils.Utils;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
 
@@ -124,16 +124,30 @@ public class EntityEnderPearl extends EntityProjectile {
             return;
         }
 
-        this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
+        Vector3 position = new Vector3(NukkitMath.floorDouble(this.x) + 0.5, this.y, NukkitMath.floorDouble(this.z) + 0.5);
 
-        this.shootingEntity.teleport(new Vector3(NukkitMath.floorDouble(this.x) + 0.5, this.y, NukkitMath.floorDouble(this.z) + 0.5), TeleportCause.ENDER_PEARL);
+        double yaw = this.shootingEntity.yaw;
+        double pitch = this.shootingEntity.pitch;
+        double headYaw = yaw + this.shootingEntity.headYaw;
+
+        MoveEntityAbsolutePacket moveEntityAbsolutePacket = new MoveEntityAbsolutePacket();
+        moveEntityAbsolutePacket.eid = this.shootingEntity.getId();
+        moveEntityAbsolutePacket.x = position.x;
+        moveEntityAbsolutePacket.y = position.y;
+        moveEntityAbsolutePacket.z = position.z;
+        moveEntityAbsolutePacket.yaw = yaw;
+        moveEntityAbsolutePacket.headYaw = headYaw;
+        moveEntityAbsolutePacket.pitch = pitch;
+        moveEntityAbsolutePacket.onGround = true;
+        moveEntityAbsolutePacket.teleport = true;
+        this.shootingEntity.getServer().getNetwork().sendPacket(this.shootingEntity, moveEntityAbsolutePacket);
 
         int gamemode = ((Player) this.shootingEntity).getGamemode();
         if (gamemode == 0 || gamemode == 2) {
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, shootingEntity, EntityDamageEvent.DamageCause.FALL, 5f, 0f));
         }
 
-        this.level.addLevelEvent(this, LevelEventPacket.EVENT_PARTICLE_ENDERMAN_TELEPORT);
+        this.level.addLevelEvent(position, LevelEventPacket.EVENT_PARTICLE_ENDERMAN_TELEPORT);
         this.level.addLevelEvent(this.shootingEntity.add(0.5, 0.5, 0.5), LevelEventPacket.EVENT_SOUND_ENDERMAN_TELEPORT);
     }
 }
