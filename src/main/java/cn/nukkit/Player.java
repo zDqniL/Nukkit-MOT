@@ -2291,7 +2291,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
             }
         }
 
-        this.checkTeleportPosition();
+        //this.checkTeleportPosition();
 
         /*if (currentTick % 20 == 0) {
             this.checkInteractNearby();
@@ -5708,7 +5708,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         }
     }
 
-    protected boolean checkTeleportPosition() {
+    /*protected boolean checkTeleportPosition() {
         return checkTeleportPosition(false);
     }
 
@@ -5732,7 +5732,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         }
 
         return false;
-    }
+    }*/
 
     protected void sendPlayStatus(int status) {
         sendPlayStatus(status, false);
@@ -5779,7 +5779,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                 this.dimensionChangeInProgress = false;
             } else {
                 this.sendPosition(this, this.yaw, this.pitch, MovePlayerPacket.MODE_TELEPORT);
-                this.checkTeleportPosition(cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
+                //this.checkTeleportPosition(cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
                 this.dummyBossBars.values().forEach(DummyBossBar::reshow);
             }
 
