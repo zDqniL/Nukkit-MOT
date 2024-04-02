@@ -10,6 +10,8 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -246,9 +248,14 @@ public class Utils {
         return result & 0xFFFFFFFFL;
     }
 
-    public static Object[][] splitArray(Object[] arrayToSplit, int chunkSize) {
+    @Nullable
+    public static Object[][] splitArray(Object[] arrayToSplit, @Nonnegative int chunkSize) {
         if (chunkSize <= 0) {
             return null;
+        }
+
+        if (arrayToSplit.length <= chunkSize) {
+            return new Object[][] { arrayToSplit };
         }
 
         int rest = arrayToSplit.length % chunkSize;
@@ -482,6 +489,7 @@ public class Utils {
             case ProtocolInfo.v1_20_40 -> "1.20.40";
             case ProtocolInfo.v1_20_50 -> "1.20.50";
             case ProtocolInfo.v1_20_60 -> "1.20.60";
+            case ProtocolInfo.v1_20_70 -> "1.20.70";
             //TODO Multiversion 添加新版本支持时修改这里
             default -> throw new IllegalStateException("Invalid protocol: " + protocol);
         };

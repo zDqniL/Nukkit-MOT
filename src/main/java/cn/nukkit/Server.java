@@ -64,10 +64,7 @@ import cn.nukkit.permission.BanEntry;
 import cn.nukkit.permission.BanList;
 import cn.nukkit.permission.DefaultPermissions;
 import cn.nukkit.permission.Permissible;
-import cn.nukkit.plugin.JavaPluginLoader;
-import cn.nukkit.plugin.Plugin;
-import cn.nukkit.plugin.PluginLoadOrder;
-import cn.nukkit.plugin.PluginManager;
+import cn.nukkit.plugin.*;
 import cn.nukkit.plugin.service.NKServiceManager;
 import cn.nukkit.plugin.service.ServiceManager;
 import cn.nukkit.potion.Effect;
@@ -152,7 +149,7 @@ public class Server {
     private final CraftingManager craftingManager;
     private final ResourcePackManager resourcePackManager;
     private final ConsoleCommandSender consoleSender;
-    private IScoreboardManager scoreboardManager;
+    private final IScoreboardManager scoreboardManager;
 
     private int maxPlayers;
     private boolean autoSave = true;
@@ -525,6 +522,11 @@ public class Server {
 
     public boolean useNativeLevelDB;
 
+    /**
+     * Enable Raw Drop of Iron and Gold
+     */
+    public boolean enableRawOres;
+
     Server(final String filePath, String dataPath, String pluginPath, boolean loadPlugins, boolean debug) {
         Preconditions.checkState(instance == null, "Already initialized!");
         currentThread = Thread.currentThread(); // Saves the current thread instance as a reference, used in Server#isPrimaryThread()
@@ -793,7 +795,7 @@ public class Server {
         if (this.getPropertyBoolean("entity-auto-spawn-task", true)) {
             this.spawnerTask = new SpawnerTask();
             int spawnerTicks = Math.max(this.getPropertyInt("ticks-per-entity-spawns", 200), 2) >> 1; // Run the spawner on 2x speed but spawn only either monsters or animals
-            this.scheduler.scheduleDelayedRepeatingTask(this.spawnerTask, spawnerTicks, spawnerTicks);
+            this.scheduler.scheduleDelayedRepeatingTask(InternalPlugin.INSTANCE, this.spawnerTask, spawnerTicks, spawnerTicks);
         }
 
         if (this.getPropertyBoolean("bstats-metrics", true)) {
@@ -1238,7 +1240,7 @@ public class Server {
     }
 
     public void removePlayerListData(UUID uuid, Collection<Player> players) {
-        this.removePlayerListData(uuid, players.toArray(new Player[0]));
+        this.removePlayerListData(uuid, players.toArray(Player.EMPTY_ARRAY));
     }
 
     public void removePlayerListData(UUID uuid, Player player) {
@@ -1249,9 +1251,7 @@ public class Server {
     }
 
     public void sendFullPlayerListData(Player player) {
-        PlayerListPacket pk = new PlayerListPacket();
-        pk.type = PlayerListPacket.TYPE_ADD;
-        pk.entries = this.playerList.values().stream()
+        PlayerListPacket.Entry[] array = this.playerList.values().stream()
                 .map(p -> new PlayerListPacket.Entry(
                         p.getUniqueId(),
                         p.getId(),
@@ -1259,11 +1259,21 @@ public class Server {
                         p.getSkin(),
                         p.getLoginChainData().getXUID()))
                 .toArray(PlayerListPacket.Entry[]::new);
-        player.dataPacket(pk);
+        Object[][] splitArray = Utils.splitArray(array, 50);
+        if (splitArray != null) {
+            for (Object[] a : splitArray) {
+                PlayerListPacket pk = new PlayerListPacket();
+                pk.type = PlayerListPacket.TYPE_ADD;
+                pk.entries = (PlayerListPacket.Entry[]) a;
+                player.dataPacket(pk);
+            }
+        }
     }
 
     public void sendRecipeList(Player player) {
-        if (player.protocol >= ProtocolInfo.v1_20_60) {
+        if (player.protocol >= ProtocolInfo.v1_20_70) {
+            player.dataPacket(CraftingManager.packet662);
+        } else if (player.protocol >= ProtocolInfo.v1_20_60) {
             player.dataPacket(CraftingManager.packet649);
         } else if (player.protocol >= ProtocolInfo.v1_20_50) {
             player.dataPacket(CraftingManager.packet630);
@@ -1932,7 +1942,7 @@ public class Server {
             }
 
             if (async) {
-                this.getScheduler().scheduleTask(new Task() {
+                this.getScheduler().scheduleTask(InternalPlugin.INSTANCE, new Task() {
                     boolean hasRun = false;
 
                     @Override
@@ -2081,7 +2091,7 @@ public class Server {
             }
         }
 
-        return matchedPlayer.toArray(new Player[0]);
+        return matchedPlayer.toArray(Player.EMPTY_ARRAY);
     }
 
     /**
@@ -2781,6 +2791,9 @@ public class Server {
         Entity.registerEntity("ThrownExpBottle", EntityExpBottle.class);
         Entity.registerEntity("ThrownPotion", EntityPotion.class);
         Entity.registerEntity("Egg", EntityEgg.class);
+        Entity.registerEntity("SmallFireBall", EntitySmallFireBall.class);
+        // 和原版名称不一样，已弃用
+        // The name is different from the vanilla version and has been deprecated
         Entity.registerEntity("BlazeFireBall", EntityBlazeFireBall.class);
         Entity.registerEntity("GhastFireBall", EntityGhastFireBall.class);
         Entity.registerEntity("ShulkerBullet", EntityShulkerBullet.class);
@@ -3081,6 +3094,7 @@ public class Server {
         }
 
         this.useNativeLevelDB = this.getPropertyBoolean("use-native-leveldb", false);
+        this.enableRawOres = this.getPropertyBoolean("enable-raw-ores", true);
     }
 
     /**
@@ -3224,6 +3238,7 @@ public class Server {
             put("hastebin-token", "");
 
             put("use-native-leveldb", false);
+            put("enable-raw-ores", true);
         }
     }
 
